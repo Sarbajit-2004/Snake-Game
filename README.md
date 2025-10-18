@@ -1,205 +1,286 @@
+# 🐍 Cross-Platform Snake Game in C (Windows + Ubuntu)
 
-Overview
+> A feature-rich, terminal-based Snake game implemented in **C**, supporting both **Windows Console** and **Linux (Ubuntu)** using **ncurses**.  
+> This project demonstrates real-time input handling, collision detection, and platform-specific console management while maintaining a shared core logic.
 
-The Snake game is implemented in C and follows the classic gameplay:
+---
 
-Gameplay: The snake moves continuously on the screen, growing longer each time it eats food. The player uses arrow keys to change its direction. The game ends if the snake collides with its own body or the game borders.
+## 🎮 Overview
 
-Score & Lives: The score increases as the snake eats food, and the player starts with a fixed number of lives. Losing a life occurs when the snake hits a boundary or itself, and a record is kept for high scores.
+The Snake game recreates the classic arcade experience in a lightweight console environment.
 
-Common Game Logic
-Both versions (Windows and Ubuntu) share core gameplay mechanics:
+### 🕹️ Gameplay
+- The snake moves continuously across the screen, growing longer each time it eats food.
+- The player controls the snake’s direction using the **arrow keys**.
+- The game ends if the snake collides with its body or the game borders.
 
-Data Structures:
+### 📈 Scoring & Lives
+- Each piece of food increases your **score** and **snake length**.
+- The player begins with a fixed number of **lives**.
+- Colliding with a wall or yourself reduces one life; when all lives are lost, the game ends.
+- A **record file** stores high scores with player name and date.
 
-struct coordinate:
-The game uses a structure to store the coordinates and current movement direction of each part of the snake.
+---
 
+## 🧠 Common Game Logic
 
-![image](https://github.com/user-attachments/assets/c31fb3de-0ea5-408a-8f98-dd0bec94ef40)
+Both the Windows and Ubuntu versions share identical gameplay mechanics — only differing in how they interact with the terminal.
 
-typedef struct coordinate coordinate;
-Global Variables:
-Variables like head, bend[], body[], length, and life manage the snake’s current state, its turning points, and overall game parameters (score, lives, etc.).
+### 🧩 Data Structures
 
-Movement & Bends:
+#### `struct coordinate`
+The core structure stores the coordinates and movement direction of each part of the snake.
 
-Movement Logic:
-The snake is moved by updating its head position based on the current direction. The rest of the body is shifted accordingly.
+```c
+typedef struct coordinate {
+    int x;
+    int y;
+    int direction;
+} coordinate;
+```
 
-Bend Points:
-The code keeps track of turning points (bends) in the snake’s path. Each time the snake changes direction, a new bend is recorded, and the body segments follow these recorded bends to simulate realistic movement.
+Each body segment and the snake head use this structure to update position and handle turns.
 
-Input Handling:
+![Snake Coordinates](https://github.com/user-attachments/assets/c31fb3de-0ea5-408a-8f98-dd0bec94ef40)
 
-The game responds to arrow key inputs to change the snake’s direction.
+### 🧱 Global Variables
+- `head` – pointer to the snake’s head  
+- `bend[]` – array storing the turning points  
+- `body[]` – array of snake body coordinates  
+- `length` – current snake length  
+- `life` – remaining lives  
 
-A check prevents the snake from reversing instantly (e.g., moving right then immediately left).
+These maintain the overall state of the game.
 
-Food & Growth:
+---
 
-When the snake’s head reaches the food’s coordinates, the snake grows in length, and new food is generated randomly within defined screen boundaries.
+## 🐍 Movement & Bends
 
-The food is represented by a character (like “F” or “*”) drawn on the screen.
+### ▶️ Movement Logic
+The snake’s head position is updated according to its current direction.  
+Each body segment follows the previous one, giving smooth motion.
 
-Collision & Lives:
+### ↩️ Bend Points
+Whenever the player changes direction, a **new bend** is recorded.  
+The segments follow these bends in sequence, simulating natural snake motion.
 
-Collision detection is implemented to check if the snake has hit the game boundaries or its own body.
+---
 
-When a collision occurs, the player loses a life. If all lives are lost, the game terminates, and a record is saved.
+## ⌨️ Input Handling
+- Arrow keys control movement.  
+- Reversal prevention ensures you can’t instantly move in the opposite direction (e.g., right → left).  
+- Inputs are captured non-blocking, allowing continuous motion.
 
-Display and Delay:
+---
 
-The game refreshes the display continuously, redrawing the snake, food, and borders.
+## 🍎 Food & Growth
+- Food is randomly placed within the playable area.  
+- When the snake’s head overlaps with the food position:
+  - The snake grows by one segment.
+  - A new food position is generated.
+- Food is displayed using symbols like `"F"` or `"*"`.
 
-A delay function controls the game speed.
+---
 
-Record Keeping:
+## 💥 Collision & Lives
+- The snake loses a life upon:
+  - Hitting a wall  
+  - Hitting its own body  
+- If all lives are lost:
+  - The game ends  
+  - High scores are written to `record.txt`
 
-The game saves the player’s name, score, and the date/time of play into a file (e.g., record.txt) for later viewing.
+---
 
-Windows Version
-Key Features and Libraries
-Headers:
-The Windows version uses headers such as <conio.h>, <windows.h>, and <process.h> for console manipulation, non-blocking input, and cursor positioning.
+## 🖥️ Display & Speed
+- The screen is continuously refreshed with updated snake and food positions.
+- A **delay function** regulates speed.
+- Each frame redraws borders, snake, and food.
 
-Console Control:
+---
 
-gotoxy() and GotoXY():
-These functions use Windows API calls (specifically SetConsoleCursorPosition()) to move the cursor to specific coordinates on the screen.
-
-Clearing the Screen:
-system("cls") is used to clear the console.
-
-Input and Delay:
-
-Non-Blocking Input:
-Functions like kbhit() from <conio.h> allow the game to check if a key has been pressed without waiting.
-
-Delay:
-A busy-wait loop (or sometimes sleep functions) is used to control the game speed.
-
-Game Logic Specifics:
-The Windows version includes functions such as Move(), Food(), Bend(), Boarder(), Up(), Down(), Left(), and Right() that manage the snake’s movement and interaction with the game environment.
-
-Bend Logic:
-The game tracks bends in an array (bend[]) so that when the snake turns, the body segments follow the path of these bends.
-
-How It Runs on Windows
-Initialization:
-
-The game starts with a welcome screen and instructions.
-
-The console is prepared using Windows-specific calls.
-
-Game Loop:
-
-The snake continuously moves on the screen.
-
-User inputs (arrow keys) are processed via getch().
-
-The snake’s head and body positions are updated, and the console is re-drawn accordingly.
-
-Collision & Record:
-
-When a collision is detected, the game either resets the snake (if lives remain) or ends the game and writes the record.
-
-Ubuntu Version (Using ncurses)
-Key Changes for Portability
-Libraries:
-The Ubuntu version replaces Windows-specific headers with <ncurses.h>, which provides functions for controlling the terminal in a portable way.
-
-Terminal Initialization:
-
-ncurses Setup:
-The game starts by calling initscr(), cbreak(), and noecho(), which configure the terminal for non-buffered, non-echo input.
-
-Input Configuration:
-keypad(stdscr, TRUE) enables the arrow keys, and nodelay(stdscr, TRUE) makes getch() non-blocking.
-
-Cursor Positioning:
-
-The functions gotoxy() and GotoXY() now use the ncurses move(y, x) function to set the cursor position.
-
-
-![image](https://github.com/user-attachments/assets/32066c34-0a5e-43c8-95e4-edd69b23c8ce)
-
-
-Screen Clearing and Refreshing:
-
-Instead of system("cls"), the Ubuntu version uses clear() to refresh the terminal screen.
-
-The screen is updated with refresh() after each drawing operation.
-
-Delay Function:
-
-The busy-wait loop is replaced by napms(100), which pauses the game for a given number of milliseconds in a more efficient and portable way.
-
-Non-Blocking Input Replacement:
-
-A custom kbhit() function is implemented using ncurses’ getch() and ungetch() to check for pending input without blocking the game loop.
-
-How It Runs on Ubuntu
-Initialization:
-
-The ncurses library is initialized, setting up the terminal for dynamic updating.
-
-The welcome screen and instructions are printed using printw().
-
-Game Loop:
-
-The game loop uses ncurses functions to read user inputs and update the game state.
-
-Movement functions (like Up(), Down(), Left(), Right()) update the snake’s coordinates on the terminal.
-
-The border and food are drawn using ncurses drawing functions.
-
-Collision and Record:
-
-Collision detection works in the same logical way as in the Windows version.
-
-When the game ends, the high-score record is written to a file and optionally displayed using ncurses functions.
-
-Comparative Summary
-Platform-Specific Code:
-
-Windows Version:
-Uses <conio.h>, <windows.h>, and system calls like system("cls") to control the console. Input is managed by getch(), and cursor positioning is achieved with Windows API functions.
-
-Ubuntu Version:
-Uses the ncurses library to handle all terminal operations (drawing, input, screen clearing, and delays) in a cross-platform manner. This approach is more portable and idiomatic for Unix-like systems.
-
-Game Logic Consistency:
-Despite the differences in how the terminal is controlled, both versions share the same core game logic:
-
-The snake is represented as an array of coordinate structures.
-
-Movement is handled by updating the head and shifting the body.
-
-Bends (turns) are recorded so that the snake's body follows correctly.
-
-Food generation, collision detection, score updates, and life management remain essentially the same.
-
-Porting Challenges:
-
-Input Handling:
-Transitioning from Windows’ blocking/non-blocking input with <conio.h> to ncurses’ getch() and a custom kbhit() function.
-
-Screen Control:
-Replacing Windows-specific console functions with ncurses functions like move(), refresh(), and clear().
-
-Delay Mechanism:
-Instead of using a busy-wait loop or Windows sleep functions, the Ubuntu version uses napms() for a smoother delay.
-
-Conclusion
-Your Snake game is a well-structured project that demonstrates classic game development concepts such as:
-
-Managing a continuously updating game state,
-
-Handling real-time user input,
-
-Performing collision detection and game state updates,
-
-And using platform-specific libraries to control the console.
-
-The Windows version leverages native API functions for console control, while the Ubuntu version uses the ncurses library to achieve similar functionality in a portable way. Both versions adhere to the same core logic, ensuring that the gameplay experience remains consistent across platforms.
+## 🧾 Record Keeping
+At the end of each session:
+- The player’s name, score, and date/time are stored in `record.txt`.
+- The record file preserves top scores across sessions.
+
+---
+
+## 🪟 Windows Version
+
+### ⚙️ Key Libraries
+```c
+#include <conio.h>
+#include <windows.h>
+#include <process.h>
+```
+
+These headers allow console manipulation, input handling, and delays.
+
+### 🖲️ Console Control
+- `gotoxy()` and `GotoXY()` use `SetConsoleCursorPosition()` from the Windows API to move the cursor.
+- The screen is cleared with:
+  ```c
+  system("cls");
+  ```
+
+### ⌨️ Input & Delay
+- **Non-blocking input:** via `kbhit()` and `getch()`  
+- **Delay:** implemented using `Sleep()` or a simple loop
+
+### 🧩 Game Logic Functions
+Key functions include:
+- `Move()` – controls continuous movement  
+- `Food()` – handles spawning  
+- `Bend()` – manages turning logic  
+- `Up()`, `Down()`, `Left()`, `Right()` – control direction  
+- `Boarder()` – draws game boundary  
+
+### 🧭 Execution Flow
+1. Welcome screen & instructions  
+2. Console setup (cursor position, color)  
+3. Game loop → movement → collision detection → scoring  
+4. Records saved on exit
+
+---
+
+## 🐧 Ubuntu (ncurses) Version
+
+### ⚙️ Key Libraries
+```c
+#include <ncurses.h>
+#include <stdlib.h>
+#include <time.h>
+```
+
+Replaces all Windows-specific APIs with **ncurses**, making it fully portable on Linux.
+
+### 🧾 Terminal Initialization
+```c
+initscr();
+cbreak();
+noecho();
+keypad(stdscr, TRUE);
+nodelay(stdscr, TRUE);
+```
+
+These configure **non-buffered, non-echoed, and non-blocking input**.
+
+### 🧭 Cursor Control
+- Instead of `gotoxy()`, ncurses uses:
+  ```c
+  move(y, x);
+  ```
+- The screen is cleared with `clear()` and updated with `refresh()`.
+
+### 💤 Delay Handling
+- Uses:
+  ```c
+  napms(100);
+  ```
+  to pause for 100ms between frames (smoother & CPU-friendly).
+
+### 🔁 Non-Blocking Input
+Implements a custom `kbhit()` function using `getch()` and `ungetch()`.
+
+### 🧩 ncurses Rendering
+- Borders, snake, and food are drawn with `printw()` or `mvprintw()`.  
+- Refreshing occurs in every loop iteration.
+
+![ncurses Snake Screenshot](https://github.com/user-attachments/assets/32066c34-0a5e-43c8-95e4-edd69b23c8ce)
+
+---
+
+## ⚖️ Comparative Summary
+
+| Feature | Windows Version | Ubuntu (ncurses) Version |
+|----------|----------------|--------------------------|
+| **Libraries** | `<conio.h>`, `<windows.h>` | `<ncurses.h>` |
+| **Screen Control** | `system("cls")`, cursor via Windows API | `clear()`, `move()`, `refresh()` |
+| **Input Handling** | `getch()` / `kbhit()` | `getch()` + `nodelay()` |
+| **Delay Mechanism** | `Sleep()` / busy-wait loop | `napms()` |
+| **Cursor Control** | `SetConsoleCursorPosition()` | `move(y, x)` |
+| **Portability** | Windows only | Cross-platform |
+| **Performance** | High, but non-portable | Efficient & portable |
+| **Look & Feel** | Classic DOS look | Terminal-friendly ncurses UI |
+
+---
+
+## ⚔️ Porting Challenges
+
+- Replacing Windows API with portable ncurses calls  
+- Rewriting screen refresh and cursor management  
+- Adapting non-blocking input logic  
+- Maintaining consistent timing and game speed  
+
+---
+
+## 🧩 Folder Structure
+
+```
+snake-game/
+├── src/
+│   ├── snake_windows.c
+│   ├── snake_ubuntu.c
+│   └── utils.h
+├── assets/
+│   └── record.txt
+├── README.md
+└── Makefile
+```
+
+---
+
+## 🏁 How to Run
+
+### 🪟 On Windows
+```bash
+gcc snake_windows.c -o snake.exe
+snake.exe
+```
+
+### 🐧 On Ubuntu / Linux
+```bash
+sudo apt install libncurses5-dev libncursesw5-dev
+gcc snake_ubuntu.c -lncurses -o snake
+./snake
+```
+
+---
+
+## 🧪 Example Output
+
+```
+Score: 45   Lives: 2
+##############################
+#                            #
+#             F              #
+#       oooooooo             #
+#                            #
+##############################
+```
+
+---
+
+## 🧠 Learning Highlights
+
+This project demonstrates:
+- Real-time input handling in C  
+- Struct-based state management  
+- Collision detection and game logic separation  
+- Cross-platform portability using platform-specific libraries  
+- Record management using file I/O  
+
+---
+
+## 👨‍💻 Author
+
+**Sarbajit Kumar De**  
+🎓 Final Year | CSE  
+📧 `sarbajit.dev@outlook.com`  
+🌐 [github.com/SarbajitDe](https://github.com/SarbajitDe)
+
+---
+---
+
+> _"Classic gameplay meets modern C design — one codebase, two platforms."_ 🐍✨
